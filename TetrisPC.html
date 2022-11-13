@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tetris Challenge</title>
+  <style>
+    body {
+      display: flex;
+    }
+
+    #board {
+      background: linear-gradient(rgb(270, 236, 170), rgb(236, 136, 167));
+      width: 90vmin;
+      height: 92vmin;
+      border: 2px solid black;
+      display: grid;
+      grid-template-rows: repeat(18, 1fr);
+      grid-template-columns: repeat(18, 1fr);
+      overflow: hidden;
+    }
+
+    .zclr {
+      border: 1px solid rgb(97, 1, 97);
+
+      background-color: purple;
+      /* border: .25vmin solid white; */
+    }
+
+    .lclr {
+      border: 1px solid rgb(230, 151, 4);
+
+      background-color: rgb(218, 143, 5);
+      border-radius: 5px;
+    }
+
+    .iclr {
+      border: 1px solid rgb(153, 39, 39);
+      background-color: rgb(165, 50, 50);
+      border-radius: 5px;
+    }
+
+    .tclr {
+      border: 1px solid rgb(129, 86, 5);
+
+      background-color: rgb(151, 100, 6);
+      border-radius: 5px;
+    }
+
+    .aclr {
+      border: 1px solid rgb(128, 33, 175);
+
+      background-color: rgb(127, 39, 172);
+      border-radius: 5px;
+    }
+
+
+    .box {
+
+      background-color: white;
+      border: .25vmin solid black;
+      border-radius: 12px;
+    }
+
+    .bt {
+      background-color: brown;
+      color: white;
+      width: 162px;
+      height: 50px;
+      margin: 2px;
+      border: .25vmin solid black;
+      border-radius: 2px;
+    }
+
+    .buttonsdiv {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 90vmin;
+
+    }
+
+    .rtdiv {
+      display: flex;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .score {
+      color: aqua;
+      align-self: center;
+      border-radius: 2px;
+    }
+
+    .Start {
+      background-color: red;
+      color: white;
+      width: 327px;
+      height: 50px;
+      margin: 4px;
+      border: .25vmin solid black;
+      border-radius: 20px;
+    }
+  </style>
+  <!-- <link rel="stylesheet" href="Tetris.css"> -->
+</head>
+
+<body>
+  <div class="body">
+    <div id="board"></div>
+  </div>
+
+  <div class="buttonsdiv">
+    <div class="rtdiv">
+      <!-- <button type="button" id="Rot" class="bt">Rotate</button> 
+  </div>
+  <div>
+    <button type="button" class="bt" id="L">Left</button>
+    <button type="button" class="bt" id="R">Right</button>
+  </div>
+  <div class="rtdiv"> <button type="button" id="Down" class="bt">Down</button> </div> -->
+      <button type="button" class="Start" id="start">Start The Game</button>
+    </div>
+</body>
+<script>
+  let speed = 3;
+  let norot = 0;
+  let score = 0;
+  let start = false;
+  let [ii1, ii2, z1, z2, l1, l2, l3, l4] = [false];
+  let i = 0;
+  let d = 0;
+  let tr = 0;;
+  let nor = 0;
+  let nol = 0;
+  let line = [];
+  let enable = true;
+  let lastPaintTime = 0;
+  let [e3ocs, e3tcs, e7ocs, e7tcs, e3oce, e3tce, e7oce, e7tce] = [false]
+  let [as, ad, af, ag] = [false]
+  let Gathered = [];
+
+  //Tetraminos arrays
+  let z = [0, 1, 9, 11, 1, 2, 10, 12, "zclr"];
+  let a = [0, 1, 9, 11, 1, 2, 9, 11, 'aclr'];
+  let t = [0, 3, 9, 10, 1, 2, 10, 11, 'tclr'];
+  let l = [0, 2, 9, 10, 2, 3, 9, 11, 'lclr'];
+  let ii = [0, 2, 9, 10, 2, 4, 9, 10, 'iclr'];
+  let Shapes = [z, ii, l, t, a];
+
+  let [ors, ore, ocs, oce, trs, tre, tcs, tce, clr] = [];
+  let jk = 0;
+  let pos = 0;
+  let RandomShape = 0;
+  let board = document.getElementById('board');
+  function main(ctime) {
+    window.requestAnimationFrame(main);
+
+    if ((ctime - lastPaintTime) / 1000 < 1 / speed) { return; }
+    lastPaintTime = ctime;
+    gameEngine();
+  }
+
+  function gameEngine() {
+
+    //Generating tetris items randomnly
+    if (i === 19 || i === 0) {
+      let [b, c] = [0, 4];
+      RandomShape = Math.round(b + (c - b) * Math.random());
+      i = 0;
+      pos = 0;
+      // ors=first part of item row start. ore= first part row end
+      [ors, ore, ocs, oce, trs, tre, tcs, tce, clr] = Shapes[RandomShape];
+    }
+    start && i++;
+
+    //clear screen 
+    board.innerHTML = "";
+// creating items after clearing screen
+    Box = document.createElement('div');
+    Box.style.gridRowStart = 1;
+    Box.style.gridRowEnd = 20;
+    Box.style.gridColumnEnd = 17;
+    Box.style.gridColumnStart = 3;
+    Box.classList.add('box');
+    board.appendChild(Box);
+
+    Score = document.createElement('div');
+    Score.style.gridRowStart = 2;
+    Score.style.gridRowEnd = 4;
+    Score.style.gridColumnEnd = 20;
+    Score.style.gridColumnStart = 17;
+    Score.classList.add('box');
+    Score.classList.add('score');
+    Score.innerText = "Score:" + score;
+    board.appendChild(Score);
+
+    if (start) {
+      //first part of item
+      const one = document.createElement('div');
+      one.style.gridRowStart = ors;
+      one.style.gridRowEnd = ore;
+      one.style.gridColumnStart = ocs;
+      one.style.gridColumnEnd = oce;
+      one.classList.add(clr);
+      board.appendChild(one);
+      //second part of item
+      const two = document.createElement('div');
+      two.style.gridRowStart = trs;
+      two.style.gridRowEnd = tre;
+      two.style.gridColumnStart = tcs;
+      two.style.gridColumnEnd = tce;
+      two.classList.add(clr);
+      board.appendChild(two);
+
+      //showing gathered items 
+      Gathered.forEach((e, index) => {
+        if (!(e[0] >= 19)) {
+          const on = document.createElement('div');
+          on.style.gridRowStart = e[0];
+          if (!(e[1] >= 20)) on.style.gridRowEnd = e[1];
+          on.style.gridColumnStart = e[2];
+          on.style.gridColumnEnd = e[3];
+          on.classList.add(e[8])
+          board.appendChild(on);
+        }
+        if (!(e[4] >= 19)) {
+          const tw = document.createElement('div');
+          tw.style.gridRowStart = e[4];
+          if (!(e[5] >= 20)) tw.style.gridRowEnd = e[5];
+          tw.style.gridColumnStart = e[6];
+          tw.style.gridColumnEnd = e[7];
+          tw.classList.add(e[8])
+          board.appendChild(tw);
+        }
+        enable = false;
+        // ii1=oce<e[2] && oce+3>=e[2] && (ors===e[0] || ors===e[4] || ors===e[1]-1 || ors===e[5]-1);
+        // ii1 && console.log(ii1);
+        //checking position of item to avoid wrong left move 
+        e3ocs = (e[3] === ocs) && ((e[0] === ors) || ((e[1] - 1) === ors) || ((e[0] + 1) === ore) || (e[1] === ore));
+        e3tcs = (e[3] === tcs) && (((e[1] - 1) === trs) || ((e[0] + 1) === tre) || (e[0] === trs) || (e[1] === tre));
+        e7ocs = (e[7] === ocs) && (((e[5] - 1) === ors) || ((e[4] + 1) === ore) || (e[4] === ors) || (e[5] === ore));
+        e7tcs = (e[7] === tcs) && (((e[5] - 1) === trs) || ((e[4] + 1) === tre) || (e[4] === trs) || (e[5] === tre));
+        //checking position of item to avoid wrong right move 
+        e3oce = (e[2] === oce) && (e[0] === ors || (e[1] - 1) === ors || (e[0] + 1) === ore || e[1] === ore);
+        e3tce = e[2] === tce && ((e[1] - 1) === trs || (e[0] + 1) === tre || e[0] === trs || e[1] === tre);
+        e7oce = e[6] === oce && ((e[5] - 1) === ors || (e[4] + 1) === ore || e[4] === ors || e[5] === ore);
+        e7tce = e[6] === tce && ((e[5] - 1) === trs || (e[4] + 1) === tre || e[4] === trs || e[5] === tre);
+
+        if (e3oce || e3tce || e7oce || e7tce) nor = 1;
+        if (e3ocs || e3tcs || e7ocs || e7tcs) nol = 1;
+        //checking position of item to avoid wrong rotation 
+        ii1 = ii1 || (oce <= e[2] && (oce + 2 >= e[2] || oce + 2 >= e[6]) && (ors === e[0] || ors === e[4] || ors === e[1] - 1 || ors === e[5] - 1));
+        ii2 = ii2 || (ors <= e[0] && (ors + 4 >= e[0] || ors + 4 >= e[4]) && (ocs === e[2] || ocs === e[6] || ocs === e[3] - 1 || ocs === e[7] - 1));
+
+        z1 = z1 || ((ore + 2 === e[0] || ore + 2 === e[4]) && (ocs === e[2] || ocs === e[6] || ocs === e[3] - 1 || ocs === e[7] - 1));
+        z2 = z2 || ((ocs === e[3] || ocs - 1 === e[7]) && (ors === e[0] || ors === e[4] || ors === e[1] - 1 || ors === e[5] - 1));
+
+        l1 = l1 || ((tce === e[2] || tce === e[6]) && (trs === e[0] + 2 || trs === e[4] + 2 || trs === e[1] + 1 || trs === e[5] + 1));
+        l2 = l2 || ((tre === e[0] - 2 || tre === e[4] - 2) && (tcs === e[2] || tcs === e[6] || tcs === e[3] - 1 || tcs === e[7] - 1));
+        l3 = l3 || ((ocs === e[3] || ocs === e[7] || ocs === e[3] - 1 || ocs === e[7] - 1) && (ore === e[1] - 2 || ore === e[5] - 2 || ore === e[0] - 1 || ore === e[4] - 1));
+        //l4= l4 || ((tre===e[0]-2 || tre===e[4]-2) && (tcs===e[2] || tcs===e[6] || tcs===e[3]-1 || tcs===e[7]-1));
+
+
+        // z2= z2 || ((tce===e[2] || tce===e[6]) && (tre===e[1] || tre===e[5] || tre===e[1]-1 || ors===e[5]-1));
+
+        //checking item touch with gathered items
+        as = ((e[0] === ore) && (e[2] === ocs || (e[3] - 1) === ocs || e[3] === oce));
+        ad = (e[0] === tre && ((e[2] + 1) === tce || (e[3] - 1) === tcs || e[2] === tcs));
+
+        ad = ad || (e[0] === tre && (e[2] === tcs - 1) && (e[3] - e[2]) == 3);
+        ad = ad || (e[0] === ore && (e[2] === ocs - 1) && (e[3] - e[2]) == 3);
+        ad = ad || (e[4] === tre && (e[6] === tcs - 1) && (e[7] - e[6]) == 3);
+        ad = ad || (e[4] === ore && (e[6] === ocs - 1) && (e[7] - e[6]) == 3);
+
+        af = ((e[4] === ore) && (e[6] === ocs || (e[7] - 1) === ocs || e[7] === oce));
+        ag = (e[4] === tre && (e[6] === tcs || (e[7] - 1) === tcs || e[7] === tce || (e[6] + 1) === tce))
+
+        if (as || ad || af || ag) tr = 1;
+
+        //updating row quantity
+        for (let row = 0; row <= 19; row++) {
+          if (e[1] === row || e[0] === row - 1) line[row] += (e[3] - e[2]);
+          if (e[4] === row - 1 || e[5] === row) line[row] += (e[7] - e[6]);
+          //checking for "t" item
+          if ((e[1] - e[0]) === 3 && e[0] === row - 2) line[row] += (e[3] - e[2]);
+          if ((e[5] - e[4]) === 3 && e[4] === row - 2) line[row] += (e[7] - e[6]);
+
+
+        }
+      })
+
+      line.forEach((val, ind) => {
+        if (val >= 15) {
+          score++;
+
+          //updating frame state after line completed
+          Gathered.forEach((e, index) => {
+
+            if (e[1] === ind && e[0] == ind - 1) { e[1] = 22; e[0] = 21; }
+            if (e[5] === ind && e[4] == ind - 1) { e[4] = 21; e[5] = 22; }
+
+            if (e[1] === ind && e[0] == ind - 2) e[1]--;
+            if (e[1] === ind && (e[0] === ind - 3)) e[1]--;
+            if (e[5] === ind && (e[4] === ind - 3)) e[5]--;
+            if ((e[0] == ind - 1) && e[1] == ind + 1) e[0]++;
+            if (e[5] === ind && e[4] == ind - 2) e[5]--;
+            if ((e[4] == ind - 1) && e[5] == ind + 1) e[4]++;
+            if ((e[4] == ind - 1) && e[5] == ind + 2) e[4]++;
+            if ((e[0] == ind - 1) && e[1] == ind + 2) e[0]++;
+
+            if (e[1] < ind || e[5] < ind || e[0] < (ind - 1) || e[4] < (ind - 1)) { e[0]++; e[1]++; e[4]++; e[5]++; }
+            line[ind] = 0;
+          })
+        }
+        else { line[ind] = 0; }
+      })
+      enable = true; //right left movement enable
+
+
+      //adding new item in gathered collection when touched each other or bottom
+      if (tre === 19 || ore === 19 || tr) {
+        let aa = [ors, ore, ocs, oce, trs, tre, tcs, tce, clr]
+        Gathered.push(aa);
+        tr = 0;
+        i = 19;
+      }
+      else {
+
+        ors++; ore++;
+        trs++; tre++;
+      }
+    }
+  }
+  window.requestAnimationFrame(main);
+
+  window.addEventListener('keydown', e => {
+
+
+    switch (e.key) {
+
+      case "ArrowUp": // To Rotate
+
+
+        if (enable) {
+          enable = false;
+          if (RandomShape === 0) { //  z 
+            pos++;
+            if (pos === 1) { if (!z1) { ore++; ocs += 2; oce++; tre++; tce--; } else { pos--; } }
+            else { if (ocs - 2 > 2 && !z2) { ocs -= 2; oce--; tce++; ore--; tre--; pos = 0; } else { pos--; } }
+            z1 = false;
+            z2 = false;
+          }
+          if (RandomShape === 1) {//  ii
+            pos++;
+            if (pos === 1) {
+              if (!(tce + 3 > 17 || ii1)) { ore--; oce++; trs -= 2; tre -= 3; tcs += 2; tce += 3; } else { pos--; }
+              ii1 = false;
+            }
+            else { if (!(ii2)) { ore++; oce--; trs += 2; tre += 3; tcs -= 2; tce -= 3; pos = 0; } else { pos--; } }
+            ii2 = false;
+          }
+
+          if (RandomShape === 2) {  //  l
+            pos++;
+            if (pos === 1) { if (tce + 1 < 18 && !l1) { trs -= 2; tre -= 2; tcs++; tce++; } else { pos--; } }
+            if (pos === 2) { if (!l2) { ore--; oce++; trs++; tre += 2; tce--; } else { pos--; } }
+            if (pos === 3) { if (ocs - 1 > 2 && !l3) { ors++; ore++; ocs--; oce--; trs--; tre--; } else { pos--; } }
+            if (pos === 4) {
+              ors -= 2; ore--; ocs++; trs++; tcs--;
+              pos = 0;
+            }
+            l1 = false; l2 = false; l3 = false;
+          }
+
+
+          if (RandomShape === 3) { // t
+            pos++;
+            if (pos === 1) { if (ocs - 1 > 2) { ore -= 2; ocs--; oce++; tcs--; tce--; } else { pos--; } }
+            if (pos === 2) { ors++; ore++; oce--; trs--; tre++; }
+            if (pos === 3) { if (tcs - 1 > 2) { ors--; ocs++; trs++; tre--; tcs--; tce++; } else { pos--; } }
+            if (pos === 4) {
+              ore++; tcs += 2;
+              pos = 0;
+            }
+          }
+        }
+        break;
+
+      case "ArrowDown": // Quick down move
+        ors++; ore++; trs++; tre++;
+        break;
+      case "s":
+        start = true;
+        break;
+
+      case "ArrowLeft":
+        if (enable) {
+          enable = false;
+          if (!(ocs === 3 || tcs === 3 || nol)) { ocs--; oce--; tcs--; tce--; }
+          nol = 0;
+        }
+        break;
+
+      case "ArrowRight":
+        if (enable) {
+          enable = false;
+          if (!(oce === 17 || tce === 17 || nor)) { ocs++; oce++; tcs++; tce++; }
+          nor = 0;
+        }
+        break;
+    }
+  });
+
+
+  document.getElementById('start').addEventListener('click', str => {
+    start = true;
+  })
+
+
+</script>
+
+</html>
