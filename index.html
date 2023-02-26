@@ -9,6 +9,7 @@
   <style>
     body {
       display: flex;
+      flex-wrap: wrap;
     }
 
     #board {
@@ -23,36 +24,34 @@
     }
 
     .zclr {
-      border: 1px solid rgb(97, 1, 97);
-
-      background-color: purple;
+      /* border: 1px solid slateblue(97, 1, 97); */
+      background-color: slateblue;
       /* border: .25vmin solid white; */
+      border-radius: 5px;
+
     }
 
     .lclr {
-      border: 1px solid rgb(230, 151, 4);
-
-      background-color: rgb(218, 143, 5);
+      border: 1px solid orangered;
+      background-color: orangered;
       border-radius: 5px;
     }
 
     .iclr {
-      border: 1px solid rgb(153, 39, 39);
-      background-color: rgb(165, 50, 50);
+      /* border: 1px solid rgb(153, 39, 39); */
+      background-color: rgb(54, 204, 122);
       border-radius: 5px;
     }
 
     .tclr {
-      border: 1px solid rgb(129, 86, 5);
-
-      background-color: rgb(151, 100, 6);
+      /* border: 1px solid rgb(129, 86, 5); */
+      background-color: goldenrod;
       border-radius: 5px;
     }
 
     .aclr {
       border: 1px solid rgb(128, 33, 175);
-
-      background-color: rgb(127, 39, 172);
+      background-color: darkorchid;
       border-radius: 5px;
     }
 
@@ -67,25 +66,27 @@
     .bt {
       background-color: brown;
       color: white;
-      width: 162px;
-      height: 50px;
-      margin: 2px;
+      width: 120px;
+      height: 40px;
+      margin: 1px;
       border: .25vmin solid black;
-      border-radius: 2px;
+      /* border-radius: 2px; */
     }
 
     .buttonsdiv {
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 90vmin;
+      margin: 0 auto;
+      justify-content: flex-end;
+      width: max-content;
 
     }
 
     .rtdiv {
       display: flex;
       justify-content: center;
-      margin-top: 12px;
+      margin-top: 4px;
     }
 
     .score {
@@ -103,6 +104,9 @@
       border: .25vmin solid black;
       border-radius: 20px;
     }
+    .br{
+      border: 2px solid red;
+    }
   </style>
   <!-- <link rel="stylesheet" href="Tetris.css"> -->
 </head>
@@ -112,15 +116,15 @@
     <div id="board"></div>
   </div>
 
-  <div class="buttonsdiv">
-    <div class="rtdiv">
-      <!-- <button type="button" id="Rot" class="bt">Rotate</button> 
+  <div class="buttonsdiv ">
+    <div class="rtdiv ">
+      <button type="button" id="Rot" class="bt">Rotate</button> 
   </div>
   <div>
     <button type="button" class="bt" id="L">Left</button>
     <button type="button" class="bt" id="R">Right</button>
   </div>
-  <div class="rtdiv"> <button type="button" id="Down" class="bt">Down</button> </div> -->
+  <div class="rtdiv"> <button type="button" id="Down" class="bt">Down</button> </div>
       <button type="button" class="Start" id="start">Start The Game</button>
     </div>
 </body>
@@ -414,7 +418,69 @@
     }
   });
 
+  document.getElementById('L').addEventListener('click', e => {
+    if (enable) {
+          enable = false;
+          if (!(ocs === 3 || tcs === 3 || nol)) { ocs--; oce--; tcs--; tce--; }
+          nol = 0;
+        }
+  });
+  document.getElementById('R').addEventListener('click', e => {
+    if (enable) {
+          enable = false;
+          if (!(oce === 17 || tce === 17 || nor)) { ocs++; oce++; tcs++; tce++; }
+          nor = 0;
+        }
+  });
+  document.getElementById('Down').addEventListener('click', ed => {
+    ors++; ore++; trs++; tre++;
+  })
 
+  document.getElementById('Rot').addEventListener('click', er => {
+    if (enable) {
+          enable = false;
+          if (RandomShape === 0) { //  z 
+            pos++;
+            if (pos === 1) { if (!z1) { ore++; ocs += 2; oce++; tre++; tce--; } else { pos--; } }
+            else { if (ocs - 2 > 2 && !z2) { ocs -= 2; oce--; tce++; ore--; tre--; pos = 0; } else { pos--; } }
+            z1 = false;
+            z2 = false;
+          }
+          if (RandomShape === 1) {//  ii
+            pos++;
+            if (pos === 1) {
+              if (!(tce + 3 > 17 || ii1)) { ore--; oce++; trs -= 2; tre -= 3; tcs += 2; tce += 3; } else { pos--; }
+              ii1 = false;
+            }
+            else { if (!(ii2)) { ore++; oce--; trs += 2; tre += 3; tcs -= 2; tce -= 3; pos = 0; } else { pos--; } }
+            ii2 = false;
+          }
+
+          if (RandomShape === 2) {  //  l
+            pos++;
+            if (pos === 1) { if (tce + 1 < 18 && !l1) { trs -= 2; tre -= 2; tcs++; tce++; } else { pos--; } }
+            if (pos === 2) { if (!l2) { ore--; oce++; trs++; tre += 2; tce--; } else { pos--; } }
+            if (pos === 3) { if (ocs - 1 > 2 && !l3) { ors++; ore++; ocs--; oce--; trs--; tre--; } else { pos--; } }
+            if (pos === 4) {
+              ors -= 2; ore--; ocs++; trs++; tcs--;
+              pos = 0;
+            }
+            l1 = false; l2 = false; l3 = false;
+          }
+
+
+          if (RandomShape === 3) { // t
+            pos++;
+            if (pos === 1) { if (ocs - 1 > 2) { ore -= 2; ocs--; oce++; tcs--; tce--; } else { pos--; } }
+            if (pos === 2) { ors++; ore++; oce--; trs--; tre++; }
+            if (pos === 3) { if (tcs - 1 > 2) { ors--; ocs++; trs++; tre--; tcs--; tce++; } else { pos--; } }
+            if (pos === 4) {
+              ore++; tcs += 2;
+              pos = 0;
+            }
+          }
+        }
+  });
   document.getElementById('start').addEventListener('click', str => {
     start = true;
   })
